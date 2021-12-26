@@ -14,6 +14,10 @@ export class JogadoresService {
     this.logger.log(`Jogador criado: ${jogadorCriado._id}`);
   }
 
+  async consultarJogadores(): Promise<Jogador[]> {
+    return await this.jogadores;
+  }
+
   private criar(criarJogadorDto: CriarJogadorDto): Jogador {
     const { nome, email, numeroTelefone } = criarJogadorDto;
 
