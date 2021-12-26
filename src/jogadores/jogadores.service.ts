@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { CriarJogadorDto } from './dtos/criar-jogador.dto';
 import { Jogador } from './interfaces/jogador.interface';
@@ -8,14 +8,48 @@ export class JogadoresService {
   private jogadores: Jogador[] = [];
   private readonly logger = new Logger(JogadoresService.name);
 
-  async criarAtualizarJogador(criarJogadorDto: CriarJogadorDto): Promise<void> {
+  async criarJogador(criarJogadorDto: CriarJogadorDto): Promise<void> {
     const jogadorCriado = await this.criar(criarJogadorDto);
 
     this.logger.log(`Jogador criado: ${jogadorCriado._id}`);
   }
 
+  async atualizarJogador(criarJogadorDto: CriarJogadorDto): Promise<void> {
+    const { email } = criarJogadorDto;
+
+    const jogadorEncontrado = this.jogadores.find(
+      (jogador) => jogador.email === email,
+    );
+
+    if (!!jogadorEncontrado) {
+      const jogadorAtualizado = await this.atualizar(
+        jogadorEncontrado,
+        criarJogadorDto,
+      );
+
+      this.logger.log(`Jogador atualizado: ${jogadorAtualizado._id}`);
+    } else {
+      this.logger.error(
+        `Falhar ao atualizar jogador com email ${email}, jogador não encontrado`,
+      );
+
+      throw new NotFoundException(`Jogador com email ${email} não encontrado`);
+    }
+  }
+
   async consultarJogadores(): Promise<Jogador[]> {
     return await this.jogadores;
+  }
+
+  async consultarJogadorPeloEmail(email: string): Promise<Jogador> {
+    const jogadorEncontrado = this.jogadores.find(
+      (jogador) => jogador.email === email,
+    );
+
+    if (!jogadorEncontrado)
+      throw new NotFoundException(`Jogador com email ${email} não encontrado`);
+
+    return jogadorEncontrado;
   }
 
   private criar(criarJogadorDto: CriarJogadorDto): Jogador {
@@ -34,5 +68,16 @@ export class JogadoresService {
     this.jogadores.push(jogador);
 
     return jogador;
+  }
+
+  private atualizar(
+    jogadorEncontrado: Jogador,
+    criarJogadorDto: CriarJogadorDto,
+  ): Jogador {
+    const { nome } = criarJogadorDto;
+
+    jogadorEncontrado.nome = nome;
+
+    return jogadorEncontrado;
   }
 }
