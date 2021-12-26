@@ -29,7 +29,7 @@ export class JogadoresService {
 
       this.logger.log(`Jogador atualizado: ${jogadorAtualizado._id}`);
     } else {
-      this.logger.error(
+      this.logger.warn(
         `Falhar ao atualizar jogador com email ${email}, jogador não encontrado`,
       );
 
@@ -50,6 +50,26 @@ export class JogadoresService {
       throw new NotFoundException(`Jogador com email ${email} não encontrado`);
 
     return jogadorEncontrado;
+  }
+
+  async deletarJogadorPeloEmail(email: string): Promise<void> {
+    const jogadorEncontrado = this.jogadores.find(
+      (jogador) => jogador.email === email,
+    );
+
+    if (!!jogadorEncontrado) {
+      this.jogadores = this.jogadores.filter(
+        (jogador) => jogador.email !== jogadorEncontrado.email,
+      );
+
+      this.logger.log(`Jogador deletado: ${jogadorEncontrado._id}`);
+    } else {
+      this.logger.warn(
+        `Falhar ao deletar jogador com email ${email}, jogador não encontrado`,
+      );
+
+      throw new NotFoundException(`Jogador com email ${email} não encontrado`);
+    }
   }
 
   private criar(criarJogadorDto: CriarJogadorDto): Jogador {

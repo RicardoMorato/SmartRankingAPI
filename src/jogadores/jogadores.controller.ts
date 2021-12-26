@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Post,
@@ -39,5 +40,11 @@ export class JogadoresController {
   @HttpCode(204)
   async atualizarJogador(@Body() criarJogadorDto: CriarJogadorDto) {
     await this.jogadoresService.atualizarJogador(criarJogadorDto);
+  }
+
+  @Delete()
+  @HttpCode(204)
+  async deletarJogador(@Query('email') email: string): Promise<void> {
+    return await this.jogadoresService.deletarJogadorPeloEmail(email);
   }
 }
