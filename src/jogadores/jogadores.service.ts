@@ -27,7 +27,7 @@ export class JogadoresService {
       throw new BadRequestException(`Jogador com email ${email} já cadastrado`);
     }
 
-    const jogadorCriado = await this.criar(criarJogadorDto);
+    const jogadorCriado = await this._criar(criarJogadorDto);
 
     this.logger.log(`Jogador criado: ${jogadorCriado._id}`);
 
@@ -41,17 +41,13 @@ export class JogadoresService {
     const jogadorEncontrado = await this._buscarJogadorPorId(_id);
 
     if (!!jogadorEncontrado) {
-      const jogadorAtualizado = await this.atualizar(
+      const jogadorAtualizado = await this._atualizar(
         jogadorEncontrado,
         atualizarJogadorDto,
       );
 
       this.logger.log(`Jogador atualizado: ${jogadorAtualizado._id}`);
     } else {
-      this.logger.warn(
-        `Falha ao atualizar jogador com id ${_id}, jogador não encontrado`,
-      );
-
       throw new NotFoundException(
         `Falha ao atualizar jogador com id ${_id}, jogador não encontrado`,
       );
@@ -75,19 +71,17 @@ export class JogadoresService {
     const jogadorEncontrado = await this._buscarJogadorPorId(_id);
 
     if (!!jogadorEncontrado) {
-      await this.deletar(_id);
+      await this._deletar(_id);
 
       this.logger.log(`Jogador deletado: ${jogadorEncontrado._id}`);
     } else {
-      this.logger.warn(
+      throw new NotFoundException(
         `Falhar ao deletar jogador com id ${_id}, jogador não encontrado`,
       );
-
-      throw new NotFoundException(`Jogador com id ${_id} não encontrado`);
     }
   }
 
-  private async criar(criarJogadorDto: CriarJogadorDto): Promise<Jogador> {
+  private async _criar(criarJogadorDto: CriarJogadorDto): Promise<Jogador> {
     const { nome, email, numeroTelefone } = criarJogadorDto;
 
     const creationBody = {
@@ -106,16 +100,19 @@ export class JogadoresService {
     return jogadorCriado;
   }
 
-  private async atualizar(
+  private async _atualizar(
     jogadorEncontrado: Jogador,
     atualizarJogadorDto: AtualizarJogadorDto,
   ): Promise<Jogador> {
     const { email } = jogadorEncontrado;
 
-    return await this.jogadorModel.findOneAndUpdate({ email }, atualizarJogadorDto);
+    return await this.jogadorModel.findOneAndUpdate(
+      { email },
+      atualizarJogadorDto,
+    );
   }
 
-  private async deletar(_id: string): Promise<any> {
+  private async _deletar(_id: string): Promise<any> {
     return await this.jogadorModel.deleteOne({ _id }).exec();
   }
 

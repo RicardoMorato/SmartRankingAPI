@@ -72,10 +72,6 @@ export class CategoriasService {
 
       this.logger.log(`Categoria atualizada: ${categoriaAtualizada._id}`);
     } else {
-      this.logger.warn(
-        `Falha ao atualizar categoria ${categoria}, categoria não encontrada`,
-      );
-
       throw new NotFoundException(
         `Falha ao atualizar categoria ${categoria}, categoria não encontrada`,
       );
@@ -93,12 +89,8 @@ export class CategoriasService {
     const categoriaEncontrada = await this._buscarCategoriaPorNome(categoria);
 
     if (!categoriaEncontrada) {
-      this.logger.warn(
-        `Falha ao cadastrar jogador ${idJogador} na categoria ${categoria}, categoria não encontrada`,
-      );
-
       throw new NotFoundException(
-        `A categoria ${categoria} não foi encontrada`,
+        `Falha ao cadastrar jogador ${idJogador} na categoria ${categoria}, categoria não encontrada`,
       );
     }
 
@@ -109,11 +101,9 @@ export class CategoriasService {
       .exec();
 
     if (jogadorCadastradoCategoria.length > 0) {
-      this.logger.warn(
+      throw new BadRequestException(
         `Falha ao cadastrar jogador ${idJogador} na categoria ${categoria}, jogador já cadastrado na categoria ${categoria}`,
       );
-
-      throw new BadRequestException(`Jogador ${idJogador} já cadastrado na categoria ${categoria}`);
     }
 
     categoriaEncontrada.jogadores.push(idJogador);
