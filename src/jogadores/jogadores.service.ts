@@ -49,11 +49,11 @@ export class JogadoresService {
       this.logger.log(`Jogador atualizado: ${jogadorAtualizado._id}`);
     } else {
       this.logger.warn(
-        `Falhar ao atualizar jogador com id ${_id}, jogador não encontrado`,
+        `Falha ao atualizar jogador com id ${_id}, jogador não encontrado`,
       );
 
       throw new NotFoundException(
-        `Falhar ao atualizar jogador com id ${_id}, jogador não encontrado`,
+        `Falha ao atualizar jogador com id ${_id}, jogador não encontrado`,
       );
     }
   }
