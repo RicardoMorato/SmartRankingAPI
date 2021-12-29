@@ -9,6 +9,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { ValidacaoParametrosPipe } from 'src/common/pipes/validacao-parametros.pipe';
 import { CategoriasService } from './categorias.service';
 import { AtribuirJogadorCategoriaDto } from './dtos/atribuir-jogador-categoria.dto';
 import { AtualizarCategoriaDto } from './dtos/atualizar-categoria.dto';
@@ -34,7 +35,7 @@ export class CategoriasController {
 
   @Get('/:categoria')
   async consultarCategoriaPorNome(
-    @Param('categoria') categoria: string,
+    @Param('categoria', ValidacaoParametrosPipe) categoria: string,
   ): Promise<Categoria> {
     return await this.categoriasService.consultarCategoriaPorNome(categoria);
   }
@@ -43,7 +44,7 @@ export class CategoriasController {
   @HttpCode(204)
   @UsePipes(ValidationPipe)
   async atualizarCategoria(
-    @Param('categoria') categoria: string,
+    @Param('categoria', ValidacaoParametrosPipe) categoria: string,
 
     @Body() atualizarCategoriaDto: AtualizarCategoriaDto,
   ): Promise<void> {
@@ -57,7 +58,7 @@ export class CategoriasController {
   @HttpCode(204)
   @UsePipes(ValidationPipe)
   async atribuirJogadorCategoria(
-    @Param('categoria') categoria: string,
+    @Param('categoria', ValidacaoParametrosPipe) categoria: string,
     @Body() atribuirJogadorCategoriaDto: AtribuirJogadorCategoriaDto,
   ): Promise<void> {
     await this.categoriasService.atribuirJogadorCategoria(
