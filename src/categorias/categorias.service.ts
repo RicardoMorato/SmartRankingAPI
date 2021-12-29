@@ -58,6 +58,16 @@ export class CategoriasService {
     return categoriaEncontrada.populate('jogadores');
   }
 
+  async consultarCategoriaJogador(idJogador: string): Promise<Categoria> {
+    await this.jogadoresService.consultarJogadorPeloId(idJogador);
+
+    return await this.categoriaModel
+      .findOne()
+      .where('jogadores')
+      .in([idJogador])
+      .exec();
+  }
+
   async atualizarCategoria(
     categoria: string,
     atualizarCategoriaDto: AtualizarCategoriaDto,
