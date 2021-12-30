@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CategoriasService } from 'src/categorias/categorias.service';
@@ -48,6 +53,28 @@ export class DesafiosService {
     this.logger.log(`Desafio criado: ${desafioCriado._id}`);
 
     return desafioCriado;
+  }
+
+  async consultarTodosDesafios(): Promise<Desafio[]> {
+    return await this.desafioModel.find().exec();
+  }
+
+  async consultarTodosDesafiosDeUmJogador(jogador: string): Promise<Desafio[]> {
+    await this._checarIdJogadorCadastrado(jogador);
+
+    const desafiosJogador = await this.desafioModel
+      .find()
+      .where('jogadores')
+      .in([jogador])
+      .exec();
+
+    if (desafiosJogador.length <= 0) {
+      throw new NotFoundException(
+        `Nenhum desafio encontrado para o jogador com id ${jogador}`,
+      );
+    }
+
+    return desafiosJogador;
   }
 
   private async _criar(
