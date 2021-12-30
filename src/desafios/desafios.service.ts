@@ -9,6 +9,7 @@ import { Model } from 'mongoose';
 import { CategoriasService } from 'src/categorias/categorias.service';
 import { Categoria } from 'src/categorias/interfaces/categoria.interface';
 import { JogadoresService } from 'src/jogadores/jogadores.service';
+import { AtualizarDesafioDto } from './dtos/atualizar-desafio.dto';
 import { CriarDesafioDto } from './dtos/criar-desafio.dto';
 import { DesafioStatus } from './interface/desafio-status.enum';
 import { Desafio } from './interface/desafio.interface';
@@ -60,22 +61,60 @@ export class DesafiosService {
     return await this.desafioModel.find().exec();
   }
 
-  async consultarTodosDesafiosDeUmJogador(jogador: string): Promise<Desafio[]> {
-    await this._checarIdJogadorCadastrado(jogador);
+  async consultarTodosDesafiosDeUmJogador(
+    idJogador: string,
+  ): Promise<Desafio[]> {
+    await this._checarIdJogadorCadastrado(idJogador);
 
     const desafiosJogador = await this.desafioModel
       .find()
       .where('jogadores')
-      .in([jogador])
+      .in([idJogador])
       .exec();
 
     if (desafiosJogador.length <= 0) {
       throw new NotFoundException(
-        `Nenhum desafio encontrado para o jogador com id ${jogador}`,
+        `Nenhum desafio encontrado para o jogador com id ${idJogador}`,
       );
     }
 
     return desafiosJogador;
+  }
+
+  async atualizarDesafio(
+    idDesafio: string,
+    atualizarDesafioDto: AtualizarDesafioDto,
+  ): Promise<void> {
+    const desafioEncontrado = await this._consultarDesafioPeloId(idDesafio);
+
+    const { dataHoraDesafio, status } = atualizarDesafioDto;
+
+    let updateBody = {};
+
+    if (dataHoraDesafio) {
+      if (desafioEncontrado.status === 'ACEITO')
+        throw new BadRequestException(
+          `Falha ao atualizar desafio, a data/hora do desafio não pode ser alterada após ele ser confirmado`,
+        );
+
+      const today = new Date();
+      const desafioDate = new Date(dataHoraDesafio);
+
+      if (desafioDate.getTime() < today.getTime())
+        throw new BadRequestException(
+          `Falha ao atualizar desafio, a data/hora do desafio não pode menor do que a data/hora atual`,
+        );
+
+      desafioEncontrado.dataHoraDesafio = dataHoraDesafio;
+    }
+
+    if (status) {
+      desafioEncontrado.status = status;
+
+      if (status === 'ACEITO') desafioEncontrado.dataHoraResposta = new Date();
+    }
+
+    await desafioEncontrado.save();
   }
 
   private async _criar(
@@ -94,14 +133,26 @@ export class DesafiosService {
     return desafioCriado;
   }
 
-  private async _checarIdJogadorCadastrado(jogador: string): Promise<void> {
+  private async _checarIdJogadorCadastrado(idJogador: string): Promise<void> {
     const jogadorEncontrado =
-      await this.jogadoresService.consultarJogadorPeloId(jogador);
+      await this.jogadoresService.consultarJogadorPeloId(idJogador);
 
     if (!jogadorEncontrado) {
       throw new BadRequestException(
-        `Falha ao marcar desafio, jogador ${jogador} não encontrado`,
+        `Falha ao marcar desafio, jogador ${idJogador} não encontrado`,
       );
     }
+  }
+
+  private async _consultarDesafioPeloId(idDesafio: string): Promise<Desafio> {
+    const desafioEncontrado = await this.desafioModel.findById(idDesafio);
+
+    if (!desafioEncontrado) {
+      throw new BadRequestException(
+        `Falha ao atualizar desafio, desafio ${idDesafio} não encontrado`,
+      );
+    }
+
+    return desafioEncontrado;
   }
 }
