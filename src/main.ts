@@ -8,7 +8,7 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionsFilter());
 
   Date.prototype.toJSON = function (): any {
-    return momentTimezone
+    return momentTimezone(this)
       .tz('America/Sao_Paulo')
       .format('YYYY-MM-DD HH:mm:ss.SSS');
   };
