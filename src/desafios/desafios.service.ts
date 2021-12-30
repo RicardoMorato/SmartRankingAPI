@@ -89,21 +89,20 @@ export class DesafiosService {
 
     const { dataHoraDesafio, status } = atualizarDesafioDto;
 
-    let updateBody = {};
-
     if (dataHoraDesafio) {
       if (desafioEncontrado.status === 'ACEITO')
         throw new BadRequestException(
           `Falha ao atualizar desafio, a data/hora do desafio não pode ser alterada após ele ser confirmado`,
         );
 
-      const today = new Date();
-      const desafioDate = new Date(dataHoraDesafio);
+      const dataHoje = new Date();
+      const dataDesafio = new Date(dataHoraDesafio);
 
-      if (desafioDate.getTime() < today.getTime())
+      if (dataDesafio.getTime() < dataHoje.getTime()) {
         throw new BadRequestException(
           `Falha ao atualizar desafio, a data/hora do desafio não pode menor do que a data/hora atual`,
         );
+      }
 
       desafioEncontrado.dataHoraDesafio = dataHoraDesafio;
     }
@@ -113,6 +112,23 @@ export class DesafiosService {
 
       if (status === 'ACEITO') desafioEncontrado.dataHoraResposta = new Date();
     }
+
+    await desafioEncontrado.save();
+  }
+
+  async cancelarDesafio(idDesafio: string): Promise<void> {
+    const desafioEncontrado = await this._consultarDesafioPeloId(idDesafio);
+
+    const dataHoje = new Date();
+    const dataDesafio = new Date(desafioEncontrado.dataHoraDesafio);
+
+    if (dataDesafio.getTime() < dataHoje.getTime()) {
+      throw new BadRequestException(
+        `Falha ao cancelar desafio ${idDesafio}, não é possível cancelar um desafio que já aconteceu`,
+      );
+    }
+
+    desafioEncontrado.status = DesafioStatus.CANCELADO;
 
     await desafioEncontrado.save();
   }

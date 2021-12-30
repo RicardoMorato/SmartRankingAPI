@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -52,5 +53,11 @@ export class DesafiosController {
       idDesafio,
       atualizarDesafioDto,
     );
+  }
+
+  @Delete('/:idDesafio')
+  @HttpCode(204)
+  async cancelarDesafio(@Param('idDesafio') idDesafio: string): Promise<void> {
+    return this.desafiosService.cancelarDesafio(idDesafio);
   }
 }
