@@ -10,6 +10,7 @@ import { CategoriasService } from 'src/categorias/categorias.service';
 import { Categoria } from 'src/categorias/interfaces/categoria.interface';
 import { JogadoresService } from 'src/jogadores/jogadores.service';
 import { CriarDesafioDto } from './dtos/criar-desafio.dto';
+import { DesafioStatus } from './interface/desafio-status.enum';
 import { Desafio } from './interface/desafio.interface';
 
 @Injectable()
@@ -85,7 +86,7 @@ export class DesafiosService {
       ...criarDesafioDto,
       categoria: categoria.categoria,
       dataHoraSolicitacao: new Date().toISOString(),
-      status: 'PENDENTE',
+      status: DesafioStatus.PENDENTE,
     });
 
     await desafioCriado.save();
